@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<button id = "ButtonX">Rotate X</button>
+<button id = "ButtonY">Rotate Y</button>
+<button id = "ButtonZ">Rotate Z</button>
+<button id = "ButtonT">Toggle Rotation</button>
+
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+    #version 300 es
+    in vec4 aPosition;
+    in vec2 aTexCoord;
+    in int aFaceId;
+
+    out vec2 vTexCoord;
+    flat out int vFaceId;
+
+    uniform vec3 uTheta;
+
+    void main() {
+        vec3 angles = radians(uTheta);
+        vec3 c = cos(angles);
+        vec3 s = sin(angles);
+
+        mat4 rx = mat4(1.0, 0.0, 0.0, 0.0,
+                    0.0, c.x, s.x, 0.0,
+                    0.0, -s.x, c.x, 0.0,
+                    0.0, 0.0, 0.0, 1.0);
+
+        mat4 ry = mat4(c.y, 0.0, -s.y, 0.0,
+                    0.0, 1.0, 0.0, 0.0,
+                    s.y, 0.0, c.y, 0.0,
+                    0.0, 0.0, 0.0, 1.0);
+
+        mat4 rz = mat4(c.z, s.z, 0.0, 0.0,
+                    -s.z, c.z, 0.0, 0.0,
+                    0.0, 0.0, 1.0, 0.0,
+                    0.0, 0.0, 0.0, 1.0);
+
+        gl_Position = rz * ry * rx * aPosition;
+        gl_Position.z = -gl_Position.z;
+
+        vTexCoord = aTexCoord;
+        vFaceId = aFaceId;
+}
+
+    
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+    #version 300 es
+    precision mediump float;
+
+    in vec2 vTexCoord;
+    flat in int vFaceId;
+
+    out vec4 fColor;
+
+    uniform sampler2D uTex0;
+    uniform sampler2D uTex1;
+    uniform sampler2D uTex2;
+    uniform sampler2D uTex3;
+
+    void main() {
+        vec4 texColor;
+        if (vFaceId == 0) texColor = texture(uTex0, vTexCoord);
+        else if (vFaceId == 1) texColor = texture(uTex1, vTexCoord);
+        else if (vFaceId == 2) texColor = texture(uTex2, vTexCoord);
+        else texColor = texture(uTex3, vTexCoord);
+
+        fColor = texColor;
+}
+
+    
+</script>
+
+<script type="text/javascript" src="initShaders.js"></script>
+<script type="text/javascript" src="MV.js"></script>
+<script type="text/javascript" src="KLPyramid.js"></script>
+<script type="text/javascript" src="utility.js"></script>
+
+<body>
+<canvas id="gl-canvas" width="1024" height="1024">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+</body>
+</html>
